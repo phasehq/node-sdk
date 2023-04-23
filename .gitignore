@@ -34,3 +34,6 @@ yarn-error.log*
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# npm ignore file
+.npmignore
