@@ -4,7 +4,7 @@
   "description": "Node.js Server SDK for Phase",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "https://github.com/phasehq/phase-node",
+  "repository": "https://github.com/phasehq/node-sdk",
   "author": "phasehq",
   "license": "MIT",
   "private": false,
