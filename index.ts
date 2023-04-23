@@ -255,7 +255,7 @@ export default class Phase {
   encrypt = async (
     plaintext: string,
     tag: string = ""
-  ): Promise<PhaseCiphertext | undefined> => {
+  ): Promise<PhaseCiphertext> => {
     await _sodium.ready;
     const sodium = _sodium;
 
