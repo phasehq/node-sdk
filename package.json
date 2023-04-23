@@ -1,6 +1,6 @@
 {
   "name": "@phase.dev/phase-node",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Node.js Server SDK for Phase",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > version.ts",
-    "prepare": "npm run build",
+    "prepare": "npm run prebuild && npm run build",
     "build": "yarn rollup -c",
     "test": "jest",
     "prepack": "npmignore --auto"
