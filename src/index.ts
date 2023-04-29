@@ -1,6 +1,6 @@
 import { KeyPair } from "libsodium-wrappers";
 const _sodium = require("libsodium-wrappers");
-import { LIB_VERSION } from "./version";
+import { LIB_VERSION } from "../version";
 
 const PH_VERSION = "v1";
 type PhaseCiphertext = `ph:${string}:${string}:${string}:${string}`;
@@ -75,14 +75,18 @@ const encryptRaw = async (plaintext: String, key: Uint8Array) => {
   const sodium = _sodium;
 
   let nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
-  let ciphertext3 = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
-    plaintext,
-    null,
-    null,
-    nonce,
-    key
-  );
-  return new Uint8Array([...ciphertext3, ...nonce]);
+  try {
+    let ciphertext3 = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
+      plaintext,
+      null,
+      null,
+      nonce,
+      key
+    );
+    return new Uint8Array([...ciphertext3, ...nonce]);
+  } catch (e) {
+    throw "Encrypt error";
+  }
 };
 
 /**
@@ -103,15 +107,19 @@ export const decryptRaw = async (
   const nonce = encryptedMessage.slice(messageLen);
   const ciphertext = encryptedMessage.slice(0, messageLen);
 
-  const plaintext = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(
-    null,
-    ciphertext,
-    null,
-    nonce,
-    key
-  );
+  try {
+    const plaintext = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(
+      null,
+      ciphertext,
+      null,
+      nonce,
+      key
+    );
 
-  return plaintext;
+    return plaintext;
+  } catch (e) {
+    throw "Decrypt error";
+  }
 };
 
 /**
@@ -262,23 +270,26 @@ export default class Phase {
     return new Promise<PhaseCiphertext>(async (resolve, reject) => {
       try {
         const oneTimeKeyPair = await randomKeyPair();
-  
+
         const symmetricKeys = await clientSessionKeys(
           oneTimeKeyPair,
           sodium.from_hex(this.appPubKey)
         );
-  
-        const ciphertext = await encryptString(plaintext, symmetricKeys.sharedTx);
-  
-        resolve(`ph:${PH_VERSION}:${sodium.to_hex(
-          oneTimeKeyPair.publicKey
-        )}:${ciphertext}:${tag}`);
-      } catch (error) {
-        reject(`Something went wrong: ${error}`)
-      }
-    })
 
-    
+        const ciphertext = await encryptString(
+          plaintext,
+          symmetricKeys.sharedTx
+        );
+
+        resolve(
+          `ph:${PH_VERSION}:${sodium.to_hex(
+            oneTimeKeyPair.publicKey
+          )}:${ciphertext}:${tag}`
+        );
+      } catch (error) {
+        reject(`Something went wrong: ${error}`);
+      }
+    });
   };
 
   decrypt = async (phaseCiphertext: PhaseCiphertext): Promise<string> => {
