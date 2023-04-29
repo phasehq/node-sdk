@@ -1,21 +1,14 @@
 import { ready as sodiumReady } from "libsodium-wrappers";
+import Phase from "../src/index";
 
-const fetchAppKey = jest.fn(async () => {
-  const unwrappedKey =
-    "e35ae9560207c90fa3dd68a8715e13a1ef988bffa284db73f04328df17f37cfe";
-  return Promise.resolve(unwrappedKey);
-});
-
-jest.mock("../src/index", () => {
-  const originalModule = jest.requireActual("../src/index");
-  return {
-    __esModule: true,
-    ...originalModule,
-    fetchAppKey: fetchAppKey,
-  };
-});
-
-const Phase = require("../src/index").default;
+// Define a mock implementation of fetchAppKeyShare
+jest.mock("../src/utils/wrappedShare", () => ({
+  fetchAppKeyShare: jest.fn(async () => {
+    const unwrappedKey =
+      "e35ae9560207c90fa3dd68a8715e13a1ef988bffa284db73f04328df17f37cfe";
+    return Promise.resolve(unwrappedKey);
+  }),
+}));
 
 describe("Phase", () => {
   beforeAll(async () => {
@@ -89,7 +82,7 @@ describe("Phase", () => {
       const APP_ID =
         "phApp:v1:e0e50cb9a1953c610126b4092093b1beca51d08d91fc3d9f8d90482a32853215";
       const APP_SECRET_INCORRECT =
-        "pss:v1:d261abecb6708c18bebdb8b2748ee574e2b0bdeaf19b081a5f10006cc83d48d0:d146c8c6d326a7842ff9b2da0da455b3f7f568a70808e2eb0cfc5143d4fe170f:59e413612e06d75d251e3416361d0743345a9c9eda1cbcf2b1ef16e3077c011d";
+        "pss:v1:d251abecb6708c18bebdb8b2748ee574e2b0bdeaf19b081a5f10006cc83d48d0:d146c8c6d326a7842ff9b2da0da455b3f7f568a70808e2eb0cfc5143d4fe170d:59e413612e06d75d251e3416361d0743345a9c9eda1cbcf2b1ef16e3077c012d";
 
       const phase = new Phase(APP_ID, APP_SECRET_INCORRECT);
       const data = "Signal";
