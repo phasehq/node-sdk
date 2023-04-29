@@ -11,7 +11,9 @@ import pkg from "./package.json";
 const PLUGINS = [
   nodeResolve({ browser: true, preferBuiltins: true }),
   ts({
-    tsconfigOverride: { exclude: ["**/*.test.ts", "./example"] },
+    tsconfigOverride: {
+      exclude: ["**/*.test.ts", "./tests", "jest.config.ts"],
+    },
   }),
   babel({
     extensions: [".ts", ".js", ".tsx", ".jsx"],
@@ -31,11 +33,7 @@ export default [
     input: {
       index: "src/index.ts",
     },
-    output: [
-      { dir: "dist", format: "cjs", name: "phase" },
-      // { dir: "dist/module", format: "es" },
-      // { dir: "dist/browser", format: "iife", name: "phase", plugins: [terser()]},
-    ],
+    output: [{ dir: "dist", format: "cjs", name: "phase" }],
     plugins: PLUGINS,
   },
 ];
