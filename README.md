@@ -9,7 +9,7 @@ SDK to integrate Phase in server-side applications running Node.js
 ## Import
 
 ```js
-const Phase = require("@phase.dev/phase-node").default;
+const Phase = require("@phase.dev/phase-node");
 ```
 
 ## Initialize
