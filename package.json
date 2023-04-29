@@ -15,7 +15,7 @@
     "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > version.ts",
     "prepare": "npm run prebuild && npm run build",
     "build": "yarn rollup -c",
-    "test": "jest",
+    "test": "jest --coverage",
     "prepack": "npmignore --auto"
   },
   "devDependencies": {
@@ -56,13 +56,6 @@
       "src/",
       "test/",
       "example/"
-    ]
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/tests/**/*.ts"
     ]
   }
 }
