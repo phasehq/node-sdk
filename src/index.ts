@@ -74,6 +74,11 @@ export default class Phase {
           symmetricKeys.sharedTx
         );
 
+        // Use sodium.memzero to wipe the keys from memory
+        sodium.memzero(oneTimeKeyPair.privateKey);
+        sodium.memzero(symmetricKeys.sharedTx);
+        sodium.memzero(symmetricKeys.sharedRx);
+
         resolve(
           `ph:${PH_VERSION}:${sodium.to_hex(
             oneTimeKeyPair.publicKey
@@ -117,7 +122,7 @@ export default class Phase {
         const sessionKeys = await serverSessionKeys(
           {
             publicKey: sodium.from_hex(this.appPubKey) as Uint8Array,
-            privateKey: sodium.from_hex(appPrivKey) as Uint8Array,
+            privateKey: appPrivKey,
           },
           sodium.from_hex(ciphertext.pubKey)
         );
@@ -126,6 +131,11 @@ export default class Phase {
           ciphertext.data,
           sessionKeys.sharedRx
         );
+
+        // Use sodium.memzero to wipe the keys from memory
+        sodium.memzero(sessionKeys.sharedRx);
+        sodium.memzero(sessionKeys.sharedTx);
+        sodium.memzero(appPrivKey);
 
         resolve(plaintext);
       } catch (error) {
