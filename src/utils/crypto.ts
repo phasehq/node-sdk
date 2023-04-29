@@ -159,14 +159,16 @@ const xorUint8Arrays = (a: Uint8Array, b: Uint8Array): Uint8Array => {
  * Reconstructs a secret given an array of shares
  *
  * @param {string[]} shares Array of shares encoded as hex string
- * @returns {string} The reconstructed secret as a hex-encoded string
+ * @returns {Uint8Array} The reconstructed secret
  */
-export const reconstructSecret = async (shares: string[]): Promise<string> => {
+export const reconstructSecret = async (
+  shares: string[]
+): Promise<Uint8Array> => {
   await _sodium.ready;
   const sodium = _sodium;
   const byteShares = shares.map((share) => sodium.from_hex(share));
 
   const secret = byteShares.reduce((prev, curr) => xorUint8Arrays(prev, curr));
 
-  return sodium.to_hex(secret);
+  return secret;
 };
