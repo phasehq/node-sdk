@@ -39,11 +39,12 @@ describe("Phase", () => {
   });
 
   describe("Encryption", () => {
+    const APP_ID =
+      "phApp:v1:cd2d579490fd794f1640590220de86a3676fa7979d419056bc631741b320b701";
+    const APP_SECRET =
+      "pss:v1:a7a0822aa4a4e4d37919009264200ba6ab978d92c8b4f7db5ae9ce0dfaf604fe:801605dfb89822ff52957abe39949bcfc44b9058ad81de58dd54fb0b110037b4b2bbde5a1143d31bbb3895f72e4ee52f5bd:625d395987f52c37022063eaf9b6260cad9ca03c99609213f899cae7f1bb04e7";
+
     test("Check if Phase encrypt returns a valid ph", async () => {
-      const APP_ID =
-        "phApp:v1:cd2d579490fd794f1640590220de86a3676fa7979d419056bc631741b320b701";
-      const APP_SECRET =
-        "pss:v1:a7a0822aa4a4e4d37919009264200ba6ab978d92c8b4f7db5ae9ce0dfaf604fe:801605dfb89822ff52957abe39949bcfc44b9058ad81de58dd54fb0b110037b4b2bbde5a1143d31bbb3895f72e4ee52f5bd:625d395987f52c37022063eaf9b6260cad9ca03c99609213f899cae7f1bb04e7";
       const phase = new Phase(APP_ID, APP_SECRET);
       const plaintext = "Signal";
       const tag = "Phase Tag";
@@ -58,6 +59,20 @@ describe("Phase", () => {
       // Check if the one-time public key and ciphertext are valid hex strings
       expect(segments[2]).toMatch(/^[0-9a-f]+$/);
       expect(segments[3]).toMatch(/^[0-9a-f]+$/);
+    });
+
+    test("Check if Phase encrypt always produces ciphertexts (ph:*) of the same length for the same plaintext", async () => {
+      const phase = new Phase(APP_ID, APP_SECRET);
+      const data = "hello world";
+      const numOfTrials = 10;
+      const ciphertextLengths = new Set<number>();
+
+      for (let i = 0; i < numOfTrials; i++) {
+        const ciphertext = await phase.encrypt(data);
+        ciphertextLengths.add((ciphertext as string).length);
+      }
+
+      expect(ciphertextLengths.size).toBe(1);
     });
   });
 
