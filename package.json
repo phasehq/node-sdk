@@ -1,6 +1,6 @@
 {
   "name": "@phase.dev/phase-node",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Node.js Server SDK for Phase",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

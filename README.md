@@ -33,3 +33,17 @@ const ciphertext = await phase.encrypt("hello world");
 ```js
 const plaintext = await phase.decrypt(ciphertext);
 ```
+
+## Development
+
+### Install dependencies
+
+`npm install`
+
+### Build
+
+`npm run build`
+
+### Run tests
+
+`npm test`
