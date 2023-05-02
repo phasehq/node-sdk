@@ -58,7 +58,9 @@ describe("Phase", () => {
       expect(segments[4]).toBe(tag);
       // Check if the one-time public key and ciphertext are valid hex strings
       expect(segments[2]).toMatch(/^[0-9a-f]+$/);
-      expect(segments[3]).toMatch(/^[0-9a-f]+$/);
+      expect(segments[3]).toMatch(
+        /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
+      );
     });
 
     test("Check if Phase encrypt always produces ciphertexts (ph:*) of the same length for the same plaintext", async () => {

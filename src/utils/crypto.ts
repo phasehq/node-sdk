@@ -71,7 +71,10 @@ export const encryptString = async (plaintext: string, key: Uint8Array) => {
   await _sodium.ready;
   const sodium = _sodium;
 
-  return sodium.to_hex(await encryptRaw(sodium.from_string(plaintext), key));
+  return sodium.to_base64(
+    await encryptRaw(sodium.from_string(plaintext), key),
+    sodium.base64_variants.ORIGINAL
+  );
 };
 
 /**
@@ -85,7 +88,12 @@ export const decryptString = async (cipherText: string, key: Uint8Array) => {
   await _sodium.ready;
   const sodium = _sodium;
 
-  return sodium.to_string(await decryptRaw(sodium.from_hex(cipherText), key));
+  return sodium.to_string(
+    await decryptRaw(
+      sodium.from_base64(cipherText, sodium.base64_variants.ORIGINAL),
+      key
+    )
+  );
 };
 
 /**
