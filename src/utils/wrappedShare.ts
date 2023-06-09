@@ -13,12 +13,13 @@ export const fetchAppKeyShare = async (
   appToken: string,
   wrapKey: string,
   appId: string,
-  dataSize: number
+  dataSize: number,
+  host: string
 ) => {
   await _sodium.ready;
   const sodium = _sodium;
 
-  const PHASE_KMS_URI = `https://kms.phase.dev/${appId}`;
+  const PHASE_KMS_URI = `${host}/${appId}`;
 
   const headers = {
     Authorization: `Bearer ${appToken}`,

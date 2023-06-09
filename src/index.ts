@@ -9,10 +9,12 @@ import {
   serverSessionKeys,
 } from "./utils/crypto";
 
-const PH_VERSION = "v1";
 type PhaseCiphertext = `ph:${string}:${string}:${string}:${string}`;
 type PhaseAppId = `phApp:${string}:${string}`;
 type PhaseAppSecret = `pss:${string}:${string}:${string}${string}`;
+
+const PH_VERSION = "v1";
+const DEFAULT_KMS_HOST = "https://kms.phase.dev";
 
 export default class Phase {
   appId: string;
@@ -24,10 +26,10 @@ export default class Phase {
     keyshare0: string;
     keyshare1UnwrapKey: string;
   };
+  kmsHost: string;
 
-  constructor(appId: string, appSecret: string) {
+  constructor(appId: string, appSecret: string, kmsHost?: string) {
     const appIdRegex = /^phApp:v(\d+):([a-fA-F0-9]{64})$/;
-    // Update regex after switching to XOR based shares
     const appSecretRegex =
       /^pss:v(\d+):([a-fA-F0-9]{64}):([a-fA-F0-9]{64,128}):([a-fA-F0-9]{64})/gm;
 
@@ -37,6 +39,7 @@ export default class Phase {
 
     this.appId = appId;
     this.appPubKey = appId.split(":")[2];
+    this.kmsHost = kmsHost ? `${kmsHost}/kms` : DEFAULT_KMS_HOST;
 
     const appSecretSegments = appSecret.split(":");
 
@@ -111,7 +114,8 @@ export default class Phase {
           this.appSecret.appToken,
           this.appSecret.keyshare1UnwrapKey,
           this.appId,
-          ciphertext.data.length / 2
+          ciphertext.data.length / 2,
+          this.kmsHost
         );
 
         const appPrivKey = await reconstructSecret([
