@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import {
   App,
@@ -17,8 +16,13 @@ import {
   SecretFetcher,
 } from "./utils/secretReferencing";
 import { LIB_VERSION } from "../version";
-import { reconstructPrivateKey, unwrapEnvKeys, digest, decryptEnvSecrets, encryptEnvSecrets } from "./utils/crypto";
-
+import {
+  reconstructPrivateKey,
+  unwrapEnvKeys,
+  digest,
+  decryptEnvSecrets,
+  encryptEnvSecrets,
+} from "./utils/crypto";
 
 const DEFAULT_HOST = "https://console.phase.dev";
 
@@ -152,19 +156,19 @@ export default class Phase {
   async get(options: GetSecretOptions): Promise<Secret[]> {
     return new Promise<Secret[]>(async (resolve, reject) => {
       const cache = new Map<string, string>();
-  
+
       const app = this.apps.find((app) => app.id === options.appId);
       if (!app) {
         return reject("Invalid app id");
       }
-  
+
       const env = app.environments.find(
         (e) => e.name.toLowerCase() === options.envName.toLowerCase()
       );
       if (!env) {
         return reject(`Invalid environment name: ${options.envName}`);
       }
-  
+
       try {
         const queryHeaders = {
           environment: env.id,
@@ -173,53 +177,80 @@ export default class Phase {
             ? await digest(options.key.toUpperCase(), env.salt)
             : null,
         };
-  
+
         const res = await axios.get(`${this.host}/service/secrets/`, {
           headers: { ...queryHeaders, ...this.getAuthHeaders() },
         });
-  
+
         const secretsToDecrypt = res.data.filter(
           (secret: Secret) =>
             (!options.path || secret.path === options.path) &&
-            (!options.tags || secret.tags.some((tag) => options.tags?.includes(tag)))
+            (!options.tags ||
+              secret.tags.some((tag) => options.tags?.includes(tag)))
         );
-  
+
         const secrets = await decryptEnvSecrets(secretsToDecrypt, env.keypair);
-  
+
         // Create lookup map
         const secretLookup = new Map<string, Secret>(
           secrets.map((s) => [normalizeKey(env.name, s.path, s.key), s])
         );
-  
+
         // Fetcher for resolving references
         const fetcher: SecretFetcher = async (envName, path, key) => {
           const cacheKey = normalizeKey(envName, path, key);
-  
+
           if (cache.has(cacheKey)) {
-            return { id: "", key, value: cache.get(cacheKey)!, comment: "", environment: envName, folder: undefined, path, tags: [], keyDigest: "", createdAt: undefined, updatedAt: new Date().toISOString(), version: 1 };
+            return {
+              id: "",
+              key,
+              value: cache.get(cacheKey)!,
+              comment: "",
+              environment: envName,
+              folder: undefined,
+              path,
+              tags: [],
+              keyDigest: "",
+              createdAt: undefined,
+              updatedAt: new Date().toISOString(),
+              version: 1,
+            };
           }
-  
+
           let secret = secretLookup.get(cacheKey);
           if (!secret) {
-            const crossEnvSecrets = await this.get({ ...options, envName, path, tags: undefined });
+            const crossEnvSecrets = await this.get({
+              ...options,
+              envName,
+              path,
+              key,
+              tags: undefined,
+            });
             secret = crossEnvSecrets.find((s) => s.key === key);
-            if (!secret) throw new Error(`Missing secret: ${envName}:${path}:${key}`);
-  
+            if (!secret)
+              throw new Error(`Missing secret: ${envName}:${path}:${key}`);
+
             secretLookup.set(cacheKey, secret);
           }
-  
+
           cache.set(cacheKey, secret.value);
           return secret;
         };
-  
+
         // Resolve references
         const resolvedSecrets = await Promise.all(
           secrets.map(async (secret) => ({
             ...secret,
-            value: await resolveSecretReferences(secret.value, options.envName, options.path || "/", fetcher, cache),
+            value: await resolveSecretReferences(
+              secret.value,
+              options.envName,
+              options.path || "/",
+              fetcher,
+              cache
+            ),
           }))
         );
-  
+
         resolve(resolvedSecrets);
       } catch (err) {
         console.error(`Error fetching secrets: ${err}`);
@@ -227,9 +258,6 @@ export default class Phase {
       }
     });
   }
-  
-
-  
 
   create = async (options: CreateSecretOptions): Promise<void> => {
     return new Promise<void>(async (resolve, reject) => {
