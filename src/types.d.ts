@@ -78,7 +78,7 @@ export type SecretInput = {
   value: string;
   comment: string;
   path?: string;
-}
+};
 
 export type CreateSecretOptions = {
   appId: string;
@@ -86,15 +86,14 @@ export type CreateSecretOptions = {
   secrets: SecretInput[];
 };
 
-export type DeleteSecretOptions = { 
+export type DeleteSecretOptions = {
   appId: string;
   envName: string;
-  secretIds: string[]
-}
+  secretIds: string[];
+};
 
 export type UpdateSecretOptions = {
   appId: string;
   envName: string;
   secrets: (SecretInput & { id: string })[];
 };
-

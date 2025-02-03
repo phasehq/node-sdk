@@ -46,7 +46,11 @@ export async function resolveSecretReferences(
 
   for (const ref of references) {
     try {
-      const { env: refEnv, path: refPath, key: refKey } = parseSecretReference(ref[0]);
+      const {
+        env: refEnv,
+        path: refPath,
+        key: refKey,
+      } = parseSecretReference(ref[0]);
       const targetEnv = refEnv || currentEnv;
       const targetPath = refPath || currentPath;
       const cacheKey = normalizeKey(targetEnv, targetPath, refKey);

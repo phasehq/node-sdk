@@ -8,8 +8,8 @@ const _sodium = require("libsodium-wrappers");
  * @returns {Uint8Array} The xor of Uint8Arrays a and b
  */
 const xorUint8Arrays = (a: Uint8Array, b: Uint8Array): Uint8Array => {
-    return Uint8Array.from(a.map((byte, i) => byte ^ b[i]));
-  };
+  return Uint8Array.from(a.map((byte, i) => byte ^ b[i]));
+};
 
 /**
  * Reconstructs a secret given an array of shares
@@ -18,15 +18,13 @@ const xorUint8Arrays = (a: Uint8Array, b: Uint8Array): Uint8Array => {
  * @returns {Uint8Array} The reconstructed secret
  */
 export const reconstructSecret = async (
-    shares: string[]
-  ): Promise<Uint8Array> => {
-    await _sodium.ready;
-    const sodium = _sodium;
-    const byteShares = shares.map((share) => sodium.from_hex(share));
-  
-    const secret = byteShares.reduce((prev, curr) => xorUint8Arrays(prev, curr));
-  
-    return secret;
-  };
+  shares: string[]
+): Promise<Uint8Array> => {
+  await _sodium.ready;
+  const sodium = _sodium;
+  const byteShares = shares.map((share) => sodium.from_hex(share));
 
-  
+  const secret = byteShares.reduce((prev, curr) => xorUint8Arrays(prev, curr));
+
+  return secret;
+};
