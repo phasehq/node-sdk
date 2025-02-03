@@ -1,6 +1,6 @@
 {
   "name": "@phase.dev/phase-node",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Node.js Server SDK for Phase",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
@@ -48,6 +48,7 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "axios": "^1.7.9",
     "libsodium-wrappers": "^0.7.11"
   },
   "publishConfig": {
