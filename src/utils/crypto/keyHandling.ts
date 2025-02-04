@@ -4,6 +4,12 @@ import { reconstructSecret } from "./secretSplitting";
 
 const _sodium = require("libsodium-wrappers");
 
+/**
+ * Converts a public signing key to to a key-exchange key that can be used for asymmetric encryption
+ * 
+ * @param {string} signingPublicKey 
+ * @returns {string}
+ */
 export const getUserKxPublicKey = async (signingPublicKey: string) => {
   await _sodium.ready;
   const sodium = _sodium;
@@ -15,6 +21,12 @@ export const getUserKxPublicKey = async (signingPublicKey: string) => {
   );
 };
 
+/**
+ * Converts a private signing key to to a key-exchange key that can be used for asymmetric encryption
+ * 
+ * @param {string} signingPrivateKey 
+ * @returns {string}
+ */
 export const getUserKxPrivateKey = async (signingPrivateKey: string) => {
   await _sodium.ready;
   const sodium = _sodium;
@@ -82,45 +94,7 @@ export const unwrapEnvKeys = async (
   };
 };
 
-/**
- * Decrypts environment secret key and value pairs.
- *
- * @param {Secret[]} encryptedSecrets - An array of encrypted secrets.
- * @param {{ publicKey: string; privateKey: string }} envKeys - The environment keys for decryption.
- * @returns {Promise<Secret[]>} - An array of decrypted secrets.
- */
-export const decryptEnvSecrets = async (
-  encryptedSecrets: Secret[],
-  envKeys: { publicKey: string; privateKey: string }
-) => {
-  const decryptedSecrets = await Promise.all(
-    encryptedSecrets.map(async (secret: Secret) => {
-      const decryptedSecret = structuredClone(secret);
-      decryptedSecret.key = await decryptAsymmetric(
-        secret.key,
-        envKeys?.privateKey,
-        envKeys?.publicKey
-      );
 
-      decryptedSecret.value = await decryptAsymmetric(
-        secret.value,
-        envKeys?.privateKey,
-        envKeys?.publicKey
-      );
-
-      decryptedSecret.comment = secret.comment
-        ? await decryptAsymmetric(
-            secret.comment,
-            envKeys?.privateKey,
-            envKeys?.publicKey
-          )
-        : secret.comment;
-
-      return decryptedSecret;
-    })
-  );
-  return decryptedSecrets;
-};
 
 export const reconstructPrivateKey = async (
   wrappedKeyShare: string,

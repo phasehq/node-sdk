@@ -149,6 +149,7 @@ export default class Phase {
     return {
       Authorization: `Bearer ${this.tokenType} ${this.bearerToken}`,
       Accept: "application/json",
+      "X-Use-Camel-Case": true,
       "User-agent": `phase-node-sdk/${LIB_VERSION}`,
     };
   }
@@ -182,12 +183,15 @@ export default class Phase {
           headers: { ...queryHeaders, ...this.getAuthHeaders() },
         });
 
-        const secretsToDecrypt = res.data.filter(
+        const secretsToDecrypt: Secret[] = res.data.filter(
           (secret: Secret) =>
             (!options.path || secret.path === options.path) &&
             (!options.tags ||
               secret.tags.some((tag) => options.tags?.includes(tag)))
         );
+
+        // Replace the value with the override value if it exists
+        secretsToDecrypt.forEach((secret => secret.value = secret.override?.isActive ? secret.override.value : secret.value))
 
         const secrets = await decryptEnvSecrets(secretsToDecrypt, env.keypair);
 
@@ -366,7 +370,7 @@ export default class Phase {
           console.log(`Error creating secrets: ${err}`);
         }
       } catch (err) {
-        console.log("Something went wrong");
+        console.log(`Something went wrong: ${err}`);
         reject;
         return;
       }

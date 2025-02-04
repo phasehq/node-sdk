@@ -49,6 +49,11 @@ export type SessionResponse = {
   apps: AppData[];
 };
 
+export type SecretValueOverride = {
+  value: string
+  isActive: boolean
+}
+
 export type Secret = {
   id: string;
   key: string;
@@ -59,9 +64,9 @@ export type Secret = {
   path: string;
   tags: string[];
   keyDigest: string;
-  //override?: Maybe<PersonalSecretType>;
+  override?: SecretValueOverride;
   createdAt?: string;
-  updatedAt: string;
+  updatedAt?: string;
   version: number;
 };
 
@@ -95,5 +100,5 @@ export type DeleteSecretOptions = {
 export type UpdateSecretOptions = {
   appId: string;
   envName: string;
-  secrets: (SecretInput & { id: string })[];
+  secrets: (SecretInput & { id: string, override?: SecretValueOverride })[];
 };

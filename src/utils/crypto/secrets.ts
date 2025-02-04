@@ -1,5 +1,7 @@
 import { PhaseKeyPair, Secret } from "../../types";
-import { encryptAsymmetric, digest } from "./general";
+import { encryptAsymmetric, digest, decryptAsymmetric } from "./general";
+
+
 
 /**
  * Encrypts environment secret key and value pairs using asymmetric encryption.
@@ -18,14 +20,20 @@ export const encryptEnvSecrets = async (
       const encryptedSecret = structuredClone(secret);
 
       // Encrypt sensitive fields
-      encryptedSecret.key = await encryptAsymmetric(
-        secret.key!.toUpperCase(),
-        envKeys.publicKey
-      );
-      encryptedSecret.value = await encryptAsymmetric(
-        secret.value!,
-        envKeys.publicKey
-      );
+      if (secret.key) {
+        encryptedSecret.key = await encryptAsymmetric(
+          secret.key!.toUpperCase(),
+          envKeys.publicKey
+        );
+        encryptedSecret.keyDigest = await digest(secret.key!, envSalt);
+      }
+
+      if (secret.value) {
+        encryptedSecret.value = await encryptAsymmetric(
+          secret.value!,
+          envKeys.publicKey
+        );
+      }
 
       if (secret.comment) {
         encryptedSecret.comment = await encryptAsymmetric(
@@ -34,11 +42,67 @@ export const encryptEnvSecrets = async (
         );
       }
 
-      encryptedSecret.keyDigest = await digest(secret.key!, envSalt);
+      if (secret.override?.value) {
+        encryptedSecret.override!.value = await encryptAsymmetric(
+          secret.override.value,
+          envKeys.publicKey
+        );
+      }
+
+      
 
       return encryptedSecret;
     })
   );
 
   return encryptedSecrets;
+};
+
+/**
+ * Decrypts environment secret key and value pairs.
+ *
+ * @param {Secret[]} encryptedSecrets - An array of encrypted secrets.
+ * @param {{ publicKey: string; privateKey: string }} envKeys - The environment keys for decryption.
+ * @returns {Promise<Secret[]>} - An array of decrypted secrets.
+ */
+export const decryptEnvSecrets = async (
+  encryptedSecrets: Secret[],
+  envKeys: { publicKey: string; privateKey: string }
+) => {
+  const decryptedSecrets = await Promise.all(
+    encryptedSecrets.map(async (secret: Secret) => {
+      const decryptedSecret = structuredClone(secret);
+
+      decryptedSecret.key = await decryptAsymmetric(
+        secret.key,
+        envKeys?.privateKey,
+        envKeys?.publicKey
+      );
+
+      decryptedSecret.value = await decryptAsymmetric(
+        secret.value,
+        envKeys?.privateKey,
+        envKeys?.publicKey
+      );
+
+      decryptedSecret.comment = secret.comment
+        ? await decryptAsymmetric(
+            secret.comment,
+            envKeys?.privateKey,
+            envKeys?.publicKey
+          )
+        : secret.comment;
+
+      if (secret.override) {
+        decryptedSecret.override!.value = await decryptAsymmetric(
+          secret.override.value,
+          envKeys?.privateKey,
+          envKeys?.publicKey
+        );
+      }
+
+      return decryptedSecret;
+    })
+  );
+  return decryptedSecrets;
 };
