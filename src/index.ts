@@ -191,7 +191,12 @@ export default class Phase {
         );
 
         // Replace the value with the override value if it exists
-        secretsToDecrypt.forEach((secret => secret.value = secret.override?.isActive ? secret.override.value : secret.value))
+        secretsToDecrypt.forEach(
+          (secret) =>
+            (secret.value = secret.override?.isActive
+              ? secret.override.value
+              : secret.value)
+        );
 
         const secrets = await decryptEnvSecrets(secretsToDecrypt, env.keypair);
 

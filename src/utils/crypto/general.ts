@@ -7,26 +7,22 @@ import { VERSION } from "./constants";
  *
  * @param {String} plaintext
  * @param {Uint8Array} key
- * @returns {Uint8Array} - Ciphertext with appended nonce
+ * @returns {Promise<Uint8Array>} - Ciphertext with appended nonce
  */
-export const encryptRaw = async (plaintext: String, key: Uint8Array) => {
-  await _sodium.ready;
-  const sodium = _sodium;
+export const encryptRaw = async (plaintext: string, key: Uint8Array): Promise<Uint8Array> => {
+  await _sodium.ready
+  const sodium = _sodium
 
-  let nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
-  try {
-    let ciphertext3 = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
-      plaintext,
-      null,
-      null,
-      nonce,
-      key
-    );
-    return new Uint8Array([...ciphertext3, ...nonce]);
-  } catch (e) {
-    throw "Encrypt error";
-  }
-};
+  let nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES)
+  let ciphertext = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
+    plaintext,
+    null,
+    null,
+    nonce,
+    key
+  )
+  return new Uint8Array([...ciphertext, ...nonce])
+}
 
 /**
  * XChaCha20-Poly1305 decrypt
@@ -39,27 +35,23 @@ export const decryptRaw = async (
   encryptedMessage: Uint8Array,
   key: Uint8Array
 ): Promise<Uint8Array> => {
-  await _sodium.ready;
-  const sodium = _sodium;
+  await _sodium.ready
+  const sodium = _sodium
 
-  const messageLen = encryptedMessage.length - 24;
-  const nonce = encryptedMessage.slice(messageLen);
-  const ciphertext = encryptedMessage.slice(0, messageLen);
+  const messageLen = encryptedMessage.length - 24
+  const nonce = encryptedMessage.slice(messageLen)
+  const ciphertext = encryptedMessage.slice(0, messageLen)
 
-  try {
-    const plaintext = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(
-      null,
-      ciphertext,
-      null,
-      nonce,
-      key
-    );
+  const plaintext = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(
+    null,
+    ciphertext,
+    null,
+    nonce,
+    key
+  )
 
-    return plaintext;
-  } catch (e) {
-    throw "Decrypt error";
-  }
-};
+  return plaintext
+}
 
 /**
  * Encrypts a single string with the given key. Returns the ciphertext as a hex string

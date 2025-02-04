@@ -100,5 +100,5 @@ export type DeleteSecretOptions = {
 export type UpdateSecretOptions = {
   appId: string;
   envName: string;
-  secrets: (SecretInput & { id: string, override?: SecretValueOverride })[];
+  secrets: (Partial<SecretInput> & { id: string, override?: SecretValueOverride })[];
 };
