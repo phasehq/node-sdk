@@ -46,21 +46,11 @@ export default class Phase {
    * This should be called after the constructor.
    */
   public async init(): Promise<void> {
-    if (!this.bearerToken) {
-      throw new Error(
-        "Token validation failed. Bearer token or public key is missing."
-      );
-    }
-
     try {
       // Fetch wrapped key data, apps, and envs for this token
       const response = await axios.get(`${this.host}/service/secrets/tokens/`, {
         headers: this.getAuthHeaders(),
       });
-
-      if (response.status !== 200) {
-        throw new Error(`Failed to fetch session data: ${response.statusText}`);
-      }
 
       const data: SessionResponse = response.data;
 

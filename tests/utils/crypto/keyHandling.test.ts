@@ -4,9 +4,9 @@ import {
   envKeyring,
   unwrapEnvKeys,
   reconstructPrivateKey,
-} from "../../src/utils/crypto";
-import * as generalUtils from "../../src/utils/crypto/general";
-import * as secretSplittingUtils from "../../src/utils/crypto/secretSplitting";
+} from "../../../src/utils/crypto";
+import * as generalUtils from "../../../src/utils/crypto/general";
+import * as secretSplittingUtils from "../../../src/utils/crypto/secretSplitting";
 
 const _sodium = require("libsodium-wrappers");
 

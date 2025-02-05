@@ -11,7 +11,7 @@ import {
   decryptAsymmetric,
   VERSION,
   digest,
-} from "../../src/utils/crypto";
+} from "../../../src/utils/crypto";
 
 describe("Crypto Utils Tests", () => {
   test("randomKeyPair generates keys of correct length", async () => {

@@ -1,11 +1,11 @@
 import _sodium from "libsodium-wrappers";
-import { Secret } from "../../src/types";
+import { Secret } from "../../../src/types";
 import {
   randomKeyPair,
   encryptEnvSecrets,
   decryptEnvSecrets,
   digest,
-} from "../../src/utils/crypto";
+} from "../../../src/utils/crypto";
 
 describe("Environment Secrets Encryption", () => {
   let keyPair: { publicKey: string; privateKey: string };
