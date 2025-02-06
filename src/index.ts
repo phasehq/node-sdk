@@ -167,7 +167,7 @@ export default class Phase {
       try {
         const queryHeaders = {
           environment: env.id,
-          path: options.path || "/",
+          path: options.path,
           keyDigest: options.key
             ? await digest(options.key.toUpperCase(), env.salt)
             : null,
