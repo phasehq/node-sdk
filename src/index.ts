@@ -98,7 +98,11 @@ export default class Phase {
       const apps: App[] = await Promise.all(appPromises);
       this.apps = apps;
     } catch (error) {
-      console.error("Error initializing session:", error);
+      if (axios.isAxiosError(error) && error.response) {
+        throw `Error: ${error.response.status}: ${
+          error.response.data?.error || ""
+        }`;
+      }
       throw new Error(
         "Failed to initialize session. Please check your token and network connection."
       );
@@ -251,9 +255,13 @@ export default class Phase {
         );
 
         resolve(resolvedSecrets);
-      } catch (err) {
-        console.error(`Error fetching secrets: ${err}`);
-        reject(err);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          throw `Error: ${error.response.status}: ${
+            error.response.data?.error || ""
+          }`;
+        }
+        throw `Error fetching secrets: ${error}`;
       }
     });
   }
@@ -293,17 +301,27 @@ export default class Phase {
 
           const requestBody = JSON.stringify({ secrets: encryptedSecrets });
 
-          const res = await axios({
-            url: `${this.host}/service/secrets/`,
-            method: "post",
-            headers: {
-              ...requestHeaders,
-              ...this.getAuthHeaders(),
-            },
-            data: requestBody,
-          });
+          try {
+            const res = await axios({
+              url: `${this.host}/service/secrets/`,
+              method: "post",
+              headers: {
+                ...requestHeaders,
+                ...this.getAuthHeaders(),
+              },
+              data: requestBody,
+            });
 
-          if (res.status === 200) resolve();
+            if (res.status === 200) resolve();
+          } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+              throw `Error: ${error.response.status}: ${
+                error.response.data?.error || ""
+              }`;
+            } else {
+              throw `Unexpected error: ${error}`;
+            }
+          }
         } catch (err) {
           console.log(`Error creating secrets: ${err}`);
         }
@@ -364,10 +382,13 @@ export default class Phase {
         } catch (err) {
           console.log(`Error creating secrets: ${err}`);
         }
-      } catch (err) {
-        console.log(`Something went wrong: ${err}`);
-        reject;
-        return;
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          throw `Error: ${error.response.status}: ${
+            error.response.data?.error || ""
+          }`;
+        }
+        throw `Something went wrong: ${error}`;
       }
     });
   };
