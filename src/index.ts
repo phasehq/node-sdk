@@ -323,12 +323,11 @@ export default class Phase {
             }
           }
         } catch (err) {
-          console.log(`Error creating secrets: ${err}`);
+          throw(`Error creating secrets: ${err}`);
         }
       } catch (err) {
-        console.log("Something went wrong");
-        reject;
-        return;
+        throw(`Something went wrong: ${err}`);
+        
       }
     });
   };
@@ -360,7 +359,6 @@ export default class Phase {
 
         encryptedSecrets.forEach((secret) => {
           if (!secret.tags) secret.tags = [];
-          if (!secret.path) secret.path = "/";
         });
 
         try {

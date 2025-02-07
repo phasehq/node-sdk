@@ -41,6 +41,12 @@ export const encryptEnvSecrets = async (
           envKeys.publicKey
         );
       }
+      else {
+        encryptedSecret.comment = await encryptAsymmetric(
+          "",
+          envKeys.publicKey
+        );
+      }
 
       if (secret.override?.value !== undefined) {
         encryptedSecret.override!.value = await encryptAsymmetric(

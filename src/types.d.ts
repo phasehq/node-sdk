@@ -83,6 +83,7 @@ export type SecretInput = {
   value: string;
   comment: string;
   path?: string;
+  tags?: string[]
 };
 
 export type CreateSecretOptions = {
