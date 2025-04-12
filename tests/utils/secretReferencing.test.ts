@@ -277,14 +277,20 @@ describe('Secret Referencing Utils', () => {
         version: 1
       });
 
-      await expect(resolveSecretReferences(
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      
+      const result = await resolveSecretReferences(
         '${SECRET_KEY}',
         'dev',
         '/',
         mockFetcher,
         null,
         cache
-      )).rejects.toThrow('Circular reference detected');
+      );
+      
+      expect(result).toBe('${SECRET_KEY}');
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Circular reference detected'));
+      consoleSpy.mockRestore();
     });
 
     it('should handle multiple references in a single value', async () => {
