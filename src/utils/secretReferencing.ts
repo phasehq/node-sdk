@@ -76,7 +76,8 @@ export async function resolveSecretReferences(
 
       // Check for circular references
       if (resolutionStack.has(cacheKey)) {
-        throw new Error(`Circular reference detected: ${ref[0]} → ${cacheKey}`);
+        console.warn(`Circular reference detected: ${ref[0]} → ${cacheKey}`);
+        continue;
       }
 
       // Resolve the reference if not in cache
@@ -99,7 +100,9 @@ export async function resolveSecretReferences(
           
           cache.set(cacheKey, resolvedSecretValue);
         } catch (error: any) {
-          throw new Error(`Failed to resolve reference ${ref[0]}: ${error.message || error}`);
+          console.warn(`Failed to resolve reference ${ref[0]}: ${error.message || error}`);
+          resolutionStack.delete(cacheKey);
+          continue;
         } finally {
           resolutionStack.delete(cacheKey);
         }
@@ -108,10 +111,7 @@ export async function resolveSecretReferences(
       // Replace the reference with its resolved value
       resolvedValue = resolvedValue.replace(ref[0], cache.get(cacheKey)!);
     } catch (error: any) {
-      if (!error.message?.includes('Failed to resolve reference')) {
-        error = new Error(`Error resolving reference ${ref[0]}: ${error.message || error}`);
-      }
-      throw error;
+      console.warn(`Error resolving reference ${ref[0]}: ${error.message || error}`);
     }
   }
 
