@@ -200,8 +200,8 @@ export default class Phase {
         );
 
         // Fetcher for resolving references
-        const fetcher: SecretFetcher = async (envName, path, key) => {
-          const cacheKey = normalizeKey(envName, path, key);
+        const fetcher: SecretFetcher = async (envName, path, key, appName) => {
+          const cacheKey = normalizeKey(envName, path, key, appName || undefined);
 
           if (cache.has(cacheKey)) {
             return {
@@ -222,18 +222,51 @@ export default class Phase {
 
           let secret = secretLookup.get(cacheKey);
           if (!secret) {
-            const crossEnvSecrets = await this.get({
-              ...options,
-              envName,
-              path,
-              key,
-              tags: undefined,
-            });
-            secret = crossEnvSecrets.find((s) => s.key === key);
-            if (!secret)
-              throw new Error(`Missing secret: ${envName}:${path}:${key}`);
+            try {
+              // For cross-app references, find the target app ID
+              let targetAppId = options.appId;
+              if (appName) {
+                // Check if appName might be an ID first
+                const appById = this.apps.find(a => a.id === appName);
+                if (appById) {
+                  targetAppId = appName; // It was an ID, use it directly
+                } else {
+                  // Treat appName as a name and check for duplicates
+                  const matchingApps = this.apps.filter(a => a.name === appName);
 
-            secretLookup.set(cacheKey, secret);
+                  if (matchingApps.length === 0) {
+                    // No app found by ID or name
+                    throw new Error(`App not found: '${appName}'. Please check the app name or ID and ensure your token has access.`);
+                  } else if (matchingApps.length > 1) {
+                    // Found multiple apps with the same name - ambiguous!
+                    const appDetails = matchingApps.map(a => `'${a.name}' (ID: ${a.id})`).join(', ');
+                    throw new Error(`Ambiguous app name: '${appName}'. Multiple apps found: ${appDetails}.`);
+                  } else {
+                    // Found exactly one app by name
+                    targetAppId = matchingApps[0].id;
+                  }
+                }
+              }
+
+              // Fetch the secret from the target app/environment
+              const crossEnvSecrets = await this.get({
+                appId: targetAppId,
+                envName,
+                path,
+                key,
+                tags: undefined,
+              });
+              
+              secret = crossEnvSecrets.find(s => s.key === key);
+              if (!secret) {
+                throw new Error(`Secret not found: ${key} in ${envName}${path !== '/' ? `, path ${path}` : ''}${appName ? `, app ${appName}` : ''}`);
+              }
+              
+              secretLookup.set(cacheKey, secret);
+            } catch (error: any) {
+              const msg = error.message || String(error);
+              throw new Error(`Failed to resolve reference: ${msg}`);
+            }
           }
 
           cache.set(cacheKey, secret.value);
@@ -249,6 +282,7 @@ export default class Phase {
               options.envName,
               options.path || "/",
               fetcher,
+              null,
               cache
             ),
           }))
