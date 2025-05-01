@@ -30,9 +30,7 @@ const PLUGINS = [
 
 export default [
   {
-    input: {
-      index: "src/index.ts",
-    },
+    input: "src/index.ts",
     output: [{ dir: "dist", format: "cjs", name: "phase" }],
     plugins: PLUGINS,
   },

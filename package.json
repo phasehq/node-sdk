@@ -1,9 +1,9 @@
 {
   "name": "@phase.dev/phase-node",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Node.js Server SDK for Phase",
   "main": "dist/index.js",
-  "types": "dist/src/index.d.ts",
+  "types": "dist/index.d.ts",
   "repository": "https://github.com/phasehq/node-sdk",
   "author": "phasehq",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "dist"
   ],
   "scripts": {
-    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > version.ts",
+    "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
     "prepare": "npm run prebuild && npm run build",
     "build": "yarn rollup -c",
     "test": "jest --coverage",
