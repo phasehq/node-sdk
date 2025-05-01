@@ -15,7 +15,7 @@ import {
   resolveSecretReferences,
   SecretFetcher,
 } from "./utils/secretReferencing";
-import { LIB_VERSION } from "../version";
+
 import {
   reconstructPrivateKey,
   unwrapEnvKeys,
@@ -23,8 +23,17 @@ import {
   decryptEnvSecrets,
   encryptEnvSecrets,
 } from "./utils/crypto";
+import { LIB_VERSION } from "./version";
 
 const DEFAULT_HOST = "https://console.phase.dev";
+
+export type {
+  GetSecretOptions,
+  CreateSecretOptions,
+  DeleteSecretOptions,
+  UpdateSecretOptions
+}
+
 
 export default class Phase {
   token: string;
