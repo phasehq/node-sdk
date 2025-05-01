@@ -40,6 +40,8 @@ const secrets = await phase.get(getOptions);
 Get a specific key:
 
 ```typescript
+import { GetSecretOptions } from "@phase.dev/phase-node";
+
 const getOptions: GetSecretOptions = {
   appId: "3b7443aa-3a7c-4791-849a-42aafc9cbe66",
   envName: "Development",
@@ -54,7 +56,7 @@ const secrets = await phase.get(getOptions);
 Create one or more secrets in a specified application and environment:
 
 ```typescript
-import { CreateSecretOptions } from "phase";
+import { CreateSecretOptions } from "@phase.dev/phase-node";
 
 const createOptions: CreateSecretOptions = {
   appId: "3b7443aa-3a7c-4791-849a-42aafc9cbe66",
@@ -83,7 +85,7 @@ Update existing secrets in a specified application and environment:
 
 
 ```typescript
-import { UpdateSecretOptions } from "phase";
+import { UpdateSecretOptions } from "@phase.dev/phase-node";
 
 const updateOptions: UpdateSecretOptions = {
   appId: "3b7443aa-3a7c-4791-849a-42aafc9cbe66",
@@ -103,7 +105,7 @@ await phase.update(updateOptions);
 Delete one or more secrets from a specified application and environment:
 
 ```typescript
-import { DeleteSecretOptions } from "phase";
+import { DeleteSecretOptions } from "@phase.dev/phase-node";
 
 const secretsToDelete = secrets.map((secret) => secret.id);
 
