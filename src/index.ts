@@ -36,13 +36,14 @@ export type {
 
 
 export default class Phase {
-  token: string;
-  host: string;
-  tokenType: string | null = null;
-  version: string | null = null;
-  bearerToken: string | null = null;
-  keypair: PhaseKeyPair = {} as PhaseKeyPair;
-  apps: App[] = [];
+  private token: string;
+  private host: string;
+  private _tokenType: string | null = null;
+  private _version: string | null = null;
+  private _bearerToken: string | null = null;
+  private _keypair: PhaseKeyPair = {} as PhaseKeyPair;
+  private apps: App[] = [];
+  _isInitialized: boolean = false
 
   constructor(token: string, host?: string) {
     this.host = host || DEFAULT_HOST;
@@ -64,7 +65,7 @@ export default class Phase {
       const data: SessionResponse = response.data;
 
       // Set the keypair for the class instance
-      this.keypair = {
+      this._keypair = {
         publicKey: this.token.split(":")[3],
         privateKey: await reconstructPrivateKey(
           data.wrapped_key_share,
@@ -80,7 +81,7 @@ export default class Phase {
             const { publicKey, privateKey, salt } = await unwrapEnvKeys(
               envData.wrapped_seed,
               envData.wrapped_salt,
-              this.keypair
+              this._keypair
             );
 
             const { id, name } = envData.environment;
@@ -106,6 +107,7 @@ export default class Phase {
 
       const apps: App[] = await Promise.all(appPromises);
       this.apps = apps;
+      this._isInitialized = true
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         throw `Error: ${error.response.status}: ${
@@ -139,18 +141,18 @@ export default class Phase {
     const [tokenType, version, bearerToken] = token.split(":");
 
     // Assign the parsed values to the instance properties
-    this.tokenType = tokenType.includes("user")
+    this._tokenType = tokenType.includes("user")
       ? "User"
       : version === "v1"
       ? "Service"
       : "ServiceAccount";
-    this.version = version;
-    this.bearerToken = bearerToken;
+    this._version = version;
+    this._bearerToken = bearerToken;
   }
 
   private getAuthHeaders() {
     return {
-      Authorization: `Bearer ${this.tokenType} ${this.bearerToken}`,
+      Authorization: `Bearer ${this._tokenType} ${this._bearerToken}`,
       Accept: "application/json",
       "X-Use-Camel-Case": true,
       "User-agent": `phase-node-sdk/${LIB_VERSION}`,
@@ -159,6 +161,9 @@ export default class Phase {
 
   async get(options: GetSecretOptions): Promise<Secret[]> {
     return new Promise<Secret[]>(async (resolve, reject) => {
+      
+      if (!this._isInitialized) await this.init()
+      
       const cache = new Map<string, string>();
 
       const app = this.apps.find((app) => app.id === options.appId);
@@ -170,7 +175,7 @@ export default class Phase {
         (e) => e.name.toLowerCase() === options.envName.toLowerCase()
       );
       if (!env) {
-        return reject(`Invalid environment name: ${options.envName}`);
+        return reject(`Invalid environment name: '${options.envName}'`);
       }
 
       try {
@@ -313,14 +318,16 @@ export default class Phase {
     return new Promise<void>(async (resolve, reject) => {
       const { appId, envName } = options;
 
+      if (!this._isInitialized) await this.init()
+
       const app = this.apps.find((app) => app.id === appId);
       if (!app) {
         throw "Invalid app id";
       }
 
-      const env = app?.environments.find((env) => env.name === envName);
+      const env = app?.environments.find((env) => env.name.toLowerCase() === envName.toLowerCase());
       if (!env) {
-        throw "Invalid environment name";
+        throw `Invalid environment name: '${envName}'`;
       }
 
       try {
@@ -379,14 +386,16 @@ export default class Phase {
     return new Promise<void>(async (resolve, reject) => {
       const { appId, envName } = options;
 
+      if (!this._isInitialized) await this.init()
+
       const app = this.apps.find((app) => app.id === appId);
       if (!app) {
         throw "Invalid app id";
       }
 
-      const env = app?.environments.find((env) => env.name === envName);
+      const env = app?.environments.find((env) => env.name.toLowerCase() === envName.toLowerCase());
       if (!env) {
-        throw "Invalid environment name";
+        throw `Invalid environment name: '${envName}'`;
       }
 
       try {
@@ -440,14 +449,16 @@ export default class Phase {
         try {
           const { appId, envName } = options;
 
+          if (!this._isInitialized) await this.init()
+
           const app = this.apps.find((app) => app.id === appId);
           if (!app) {
             throw "Invalid app id";
           }
 
-          const env = app?.environments.find((env) => env.name === envName);
+          const env = app?.environments.find((env) => env.name.toLowerCase() === envName.toLowerCase());
           if (!env) {
-            throw "Invalid environment name";
+            throw `Invalid environment name: '${envName}'`;
           }
 
           const requestHeaders = { environment: env.id };
